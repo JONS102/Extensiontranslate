@@ -1,0 +1,35 @@
+{
+    "manifest_version": 3,
+    "name": "Shadow Speak - YouTube Interactive Subs",
+    "version": "1.0",
+    "description": "Hỗ trợ Shadow Speaking với phụ đề tương tác trên YouTube.",
+    "permissions": [
+        "activeTab",
+        "scripting"
+    ],
+    "host_permissions": [
+        "*://*.youtube.com/*",
+        "*://*.google.com/*",
+        "*://*.googleapis.com/*",
+        "*://api.dictionaryapi.dev/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.youtube.com/*"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "css": [
+                "styles.css"
+            ]
+        }
+    ],
+    "action": {
+        "default_title": "Bật/Tắt Shadow Speak"
+    }
+}

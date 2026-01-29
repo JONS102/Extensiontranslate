@@ -1,0 +1,80 @@
+/* CẤP CỨU: Nâng độ cao của khung chứa phụ đề lên trên các lớp layer khác của Youtube */
+/* Fix lỗi dòng subtitle thứ 2 bị thanh điều khiển video (Control Bar) che mất không click được */
+
+.html5-video-player .ytp-caption-window-container {
+    z-index: 999999 !important;
+    /* Cao hơn cả mức 6000 của Youtube */
+    bottom: 10% !important;
+    /* Đẩy sub lên cao hơn một chút để tránh sát đáy quá */
+}
+
+/* Đảm bảo vùng chứa Caption không chặn chuột vào video (click xuyên thấu) */
+.ytp-caption-window-container,
+.ytp-caption-window-bottom {
+    pointer-events: none !important;
+}
+
+.ytp-caption-segment {
+    pointer-events: none !important;
+    overflow: visible !important;
+    z-index: 999999 !important;
+}
+
+/* Font chữ dễ đọc và Tooltip */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&display=swap');
+
+/* Tooltip hiển thị nghĩa */
+.ss-tooltip {
+    position: fixed;
+    background: #222;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    pointer-events: none;
+    z-index: 2147483647;
+    /* Max Int 32-bit - Cao nhất vũ trụ Browser */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: none;
+}
+
+.ss-tooltip.visible {
+    display: block;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Style cho các từ tương tác TRÊN SUBTITLE GỐC */
+.ss-interactive-word {
+    cursor: pointer;
+    transition: all 0.1s;
+    border-bottom: 1px solid transparent;
+    pointer-events: auto !important;
+    /* BẮT BUỘC: Để click được */
+    position: relative;
+    z-index: 1000000 !important;
+    display: inline-block;
+    /* Giúp hit-box chuẩn hơn */
+}
+
+.ss-interactive-word:hover {
+    color: #4facfe !important;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.6);
+    /* Đậm hơn chút để dễ nhìn */
+    border-radius: 4px;
+}
