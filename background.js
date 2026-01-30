@@ -1,6 +1,9 @@
 // Background Service Worker
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    // ------------------------------------------------------------------------
+    // ACTION 1: TRANSLATE
+    // ------------------------------------------------------------------------
     if (request.action === "translate") {
         const text = request.text;
 
@@ -33,7 +36,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 console.error("Backup failed", err);
             }
 
-            return "Lỗi dịch (Thử lại sau)";
+            return "Không tìm thấy nghĩa";
         };
 
         // 2. Hàm lấy Phiên âm & Ví dụ (Dictionary API)
@@ -76,8 +79,67 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     phonetic: dictData.phonetic,
                     example: dictData.example
                 });
+            })
+            .catch(err => {
+                console.error("Translation ERROR:", err);
+                sendResponse(null); // Trả về null để bên kia biết là lỗi
             });
 
         return true; // Giữ kết nối async
+    }
+
+    // ------------------------------------------------------------------------
+    // ACTION 2: SAVE WORD
+    // ------------------------------------------------------------------------
+    if (request.action === "save_word") {
+        try {
+            const newWord = request.data;
+            if (!newWord || !newWord.text) {
+                console.error("Invalid word data:", newWord);
+                sendResponse({ success: false, message: "Invalid Data" });
+                return true;
+            }
+
+            chrome.storage.local.get(["vocabList"], (result) => {
+                const list = result.vocabList || [];
+                // Check duplicate by text (case insensitive)
+                const exists = list.some(w => w.text.toLowerCase() === newWord.text.toLowerCase());
+
+                if (!exists) {
+                    list.unshift(newWord);
+                    chrome.storage.local.set({ vocabList: list }, () => {
+                        if (chrome.runtime.lastError) {
+                            console.error("Storage Error:", chrome.runtime.lastError);
+                            sendResponse({ success: false, message: "Storage Error" });
+                        } else {
+                            console.log("Word saved successfully:", newWord.text);
+                            sendResponse({ success: true });
+                        }
+                    });
+                } else {
+                    console.log("Duplicate word:", newWord.text);
+                    sendResponse({ success: false, message: "Duplicate" });
+                }
+            });
+        } catch (error) {
+            console.error("Save Word Crash:", error);
+            sendResponse({ success: false, message: error.message });
+        }
+        return true; // Keep async channel open
+    }
+
+    // ------------------------------------------------------------------------
+    // ACTION 3: SPEAK (TEXT TO SPEECH)
+    // ------------------------------------------------------------------------
+    if (request.action === "speak") {
+        const text = request.text;
+        if (text) {
+            chrome.tts.speak(text, {
+                'lang': 'en-US',
+                'rate': 1.0
+            });
+        }
+        sendResponse({ success: true });
+        return true;
     }
 });

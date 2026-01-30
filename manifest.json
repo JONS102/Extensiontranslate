@@ -5,7 +5,9 @@
     "description": "Hỗ trợ Shadow Speaking với phụ đề tương tác trên YouTube.",
     "permissions": [
         "activeTab",
-        "scripting"
+        "scripting",
+        "storage",
+        "tts"
     ],
     "host_permissions": [
         "*://*.youtube.com/*",
@@ -30,6 +32,7 @@
         }
     ],
     "action": {
-        "default_title": "Bật/Tắt Shadow Speak"
+        "default_title": "Shadow Speak Workbook",
+        "default_popup": "popup.html"
     }
 }

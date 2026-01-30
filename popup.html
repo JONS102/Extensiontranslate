@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadow Speak Workbook</title>
+    <link rel="stylesheet" href="popup.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Word List</h1>
+            <div class="tabs">
+                <button id="tab-list" class="tab-btn active">List</button>
+                <button id="tab-flashcard" class="tab-btn">Flashcard</button>
+            </div>
+        </header>
+
+        <!-- View 1: Danh sách từ -->
+        <div id="view-list" class="view active">
+            <div class="empty-state" id="list-empty">
+                <p>No words have been saved yet.</p>
+                <small>Click "Save" when looking up words on YouTube!</small>
+            </div>
+            <ul id="word-list" class="word-list">
+                <!-- Items will be injected here via JS -->
+            </ul>
+        </div>
+        <div style="padding: 8px; text-align: center; font-size: 11px; color: #aaa; border-top: 1px solid #eee;">
+            Status: <span id="debug-status">Loading...</span>
+        </div>
+
+        <!-- View 2: Flashcard -->
+        <div id="view-flashcard" class="view">
+            <div class="flashcard-container">
+                <div class="flashcard" id="flashcard">
+                    <div class="card-face card-front">
+                        <h2 id="fc-word">Hello</h2>
+                        <p class="hint">(Chạm để lật)</p>
+                    </div>
+                    <div class="card-face card-back">
+                        <div class="card-content">
+                            <h3 id="fc-meaning">Xin chào</h3>
+                            <button id="fc-speak" class="speak-btn">🔊</button>
+                            <p id="fc-phonetic" class="phonetic">/həˈloʊ/</p>
+                            <p id="fc-example" class="example">"Hello, how are you?"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="controls">
+                <button id="btn-prev" class="control-btn" title="Từ trước">←</button>
+                <span id="fc-counter">0 / 0</span>
+                <button id="btn-next" class="control-btn" title="Từ tiếp">→</button>
+            </div>
+        </div>
+    </div>
+    <script src="popup.js"></script>
+</body>
+
+</html>

@@ -42,7 +42,7 @@ function makeSubtitleInteractive(segmentElement) {
     const originalText = segmentElement.textContent;
     if (!originalText || !originalText.trim()) return;
 
-    segmentElement.innerHTML = '';
+    segmentElement.textContent = ''; // Safe clear
     const words = originalText.split(/(\s+)/);
 
     words.forEach(word => {
@@ -127,60 +127,133 @@ function showTooltip(targetElement, data) {
     // Xóa timer ẩn cũ để đảm bảo nó hiện lên
     if (hideTimer) clearTimeout(hideTimer);
 
+    // Clear old content
+    tooltip.textContent = '';
+
     if (data.loading) {
-        tooltip.innerHTML = `<div style="font-style:italic; color:#aaa; font-size:13px;">Wait...</div>`;
+        const loadingDiv = document.createElement('div');
+        loadingDiv.style.cssText = "font-style:italic; color:#aaa; font-size:13px;";
+        loadingDiv.textContent = "Wait...";
+        tooltip.appendChild(loadingDiv);
     } else if (data.error) {
-        tooltip.innerHTML = `<div style="color:#ff6b6b; font-size:13px;">Error</div>`;
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = "color:#ff6b6b; font-size:13px;";
+        errorDiv.textContent = "Error";
+        tooltip.appendChild(errorDiv);
     } else {
-        let phon = data.phonetic ? `<span style="font-size: 13px; color: #a5b4fc; font-style: italic;">${data.phonetic}</span>` : '';
-        let ex = data.example ? `<div style="font-size: 12px; color: #d1d5db; font-style: italic; border-top: 1px solid #444; padding-top: 6px; margin-top: 6px; line-height: 1.4;">"${data.example}"</div>` : '';
+        const container = document.createElement('div');
+        container.style.cssText = "text-align: left; min-width: 150px;";
 
-        tooltip.innerHTML = `
-            <div style="text-align: left; min-width: 150px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                    <span id="ss-speaker-btn" style="font-size: 16px; cursor: pointer; transition: transform 0.1s;" title="Phát âm">🔊</span>
-                    <strong style="font-size: 16px; color: #60a5fa;">${data.word || ''}</strong>
-                    ${phon}
-                </div>
-                <div style="font-size: 15px; font-weight: 600; color: #ffffff; margin-bottom: 2px;">
-                    ${data.translation || '...'}
-                </div>
-                ${ex}
-            </div>
-        `;
+        const header = document.createElement('div');
+        header.style.cssText = "display: flex; align-items: center; gap: 8px; margin-bottom: 4px;";
 
-        const speaker = document.getElementById('ss-speaker-btn');
-        if (speaker && data.word) {
+        // Speaker
+        if (data.word) {
+            const speaker = document.createElement('span');
+            speaker.id = 'ss-speaker-btn';
+            speaker.textContent = '🔊';
+            speaker.style.cssText = "font-size: 16px; cursor: pointer; transition: transform 0.1s;";
+            speaker.title = "Phát âm";
             speaker.onclick = (e) => {
                 e.stopPropagation();
                 speaker.style.transform = "scale(1.2)";
                 setTimeout(() => speaker.style.transform = "scale(1)", 100);
                 speakWord(data.word);
             };
+            header.appendChild(speaker);
         }
+
+        const wordNode = document.createElement('strong');
+        wordNode.style.cssText = "font-size: 16px; color: #60a5fa;";
+        wordNode.textContent = data.word || '';
+        header.appendChild(wordNode);
+
+        if (data.phonetic) {
+            const phon = document.createElement('span');
+            phon.style.cssText = "font-size: 13px; color: #a5b4fc; font-style: italic;";
+            phon.textContent = data.phonetic;
+            header.appendChild(phon);
+        }
+
+        // --- Save Button ---
+        const saveBtn = document.createElement('span');
+        // Dùng icon trái tim rỗng màu hồng/đỏ cho đẹp
+        saveBtn.innerHTML = '&#9825;';
+        saveBtn.title = "Lưu vào sổ tay";
+        saveBtn.style.cssText = "font-size: 22px; cursor: pointer; margin-left: auto; color: #ff4757; line-height: 1; transition: all 0.2s;";
+
+        saveBtn.onclick = (e) => {
+            console.log("Click Save Button for:", data.word); // Debug Log
+            e.stopPropagation();
+
+            // Visual feedback immediately
+            saveBtn.style.transform = "scale(1.2)";
+            setTimeout(() => saveBtn.style.transform = "scale(1)", 200);
+
+            chrome.runtime.sendMessage({
+                action: "save_word",
+                data: {
+                    text: data.word,
+                    meaning: data.translation,
+                    phonetic: data.phonetic,
+                    example: data.example
+                }
+            }, (res) => {
+                console.log("Save response:", res); // Debug Log
+                if (chrome.runtime.lastError) {
+                    console.error("Runtime Error:", chrome.runtime.lastError);
+                    alert("Lỗi kết nối Extension. Hãy reload lại trang!");
+                    return;
+                }
+
+                if (res && res.success) {
+                    saveBtn.innerHTML = '&#10084;'; // Trái tim đặc (Filled Red Heart)
+                    saveBtn.style.transform = "scale(1.2)";
+                    saveBtn.title = "Đã lưu";
+                } else if (res && res.message === "Duplicate") {
+                    saveBtn.innerHTML = '&#10084;';
+                    saveBtn.title = "Đã có trong sổ tay";
+                }
+            });
+        };
+        header.appendChild(saveBtn);
+
+        container.appendChild(header);
+
+        const trans = document.createElement('div');
+        trans.style.cssText = "font-size: 15px; font-weight: 600; color: #ffffff; margin-bottom: 2px;";
+        trans.textContent = data.translation || '...';
+        container.appendChild(trans);
+
+        if (data.example) {
+            const ex = document.createElement('div');
+            ex.style.cssText = "font-size: 12px; color: #d1d5db; font-style: italic; border-top: 1px solid #444; padding-top: 6px; margin-top: 6px; line-height: 1.4;";
+            ex.textContent = `"${data.example}"`;
+            container.appendChild(ex);
+        }
+
+        tooltip.appendChild(container);
     }
 
     tooltip.classList.add('visible');
+    tooltip.style.display = 'block'; // Force display to calculate rect correctly
 
     // Tính toán vị trí
     const rect = targetElement.getBoundingClientRect();
-    const top = rect.top - 20;
+    const top = rect.top - 15; // Cách lên trên 1 chút
     const left = rect.left + (rect.width / 2);
 
     tooltip.style.top = `${top}px`;
     tooltip.style.left = `${left}px`;
-    tooltip.style.transform = "translate(-50%, -100%) translateY(-10px)";
+    tooltip.style.transform = "translate(-50%, -100%)";
 }
 
 function speakWord(text) {
     if (!text) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(voice => voice.name.includes("Google US English"));
-    if (preferredVoice) utterance.voice = preferredVoice;
-    window.speechSynthesis.speak(utterance);
+    chrome.runtime.sendMessage({
+        action: "speak",
+        text: text
+    });
 }
 
 function startObserver() {

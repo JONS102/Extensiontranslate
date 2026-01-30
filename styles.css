@@ -26,36 +26,43 @@
 /* Tooltip hiển thị nghĩa */
 .ss-tooltip {
     position: fixed;
-    background: #222;
+    background: rgba(20, 20, 20, 0.95);
+    /* Darker, blur background */
+    backdrop-filter: blur(5px);
     color: #fff;
-    padding: 6px 12px;
-    border-radius: 6px;
+    padding: 12px 16px;
+    border-radius: 8px;
     font-size: 14px;
     font-family: 'Outfit', sans-serif;
     font-weight: 500;
-    pointer-events: none;
+
+    /* QUAN TRỌNG: Bật lại sự kiện chuột cho tooltip này */
+    pointer-events: auto !important;
+
     z-index: 2147483647;
-    /* Max Int 32-bit - Cao nhất vũ trụ Browser */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     display: none;
+    /* Mặc định ẩn */
+    min-width: 200px;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.ss-tooltip button,
+.ss-tooltip span {
+    cursor: pointer;
+    pointer-events: auto !important;
+    /* Đảm bảo nút con cũng nhận click */
 }
 
 .ss-tooltip.visible {
-    display: block;
-    animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(5px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    display: block !important;
+    /* Bắt buộc hiện */
+    opacity: 1 !important;
+    transform: translateY(0);
+    animation: none;
+    /* Tắt animation phức tạp để tránh lỗi */
 }
 
 /* Style cho các từ tương tác TRÊN SUBTITLE GỐC */
